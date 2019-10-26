@@ -176,7 +176,7 @@ def make_transaction(request):
 
 
 @login_required
-def user_profile_show(request):
+def user_profile_view(request):
 	user_info=UserProfileInfo.objects.filter(user=request.user)[0]
 	return render(request,"app1/show_profile.html",{"user":request.user,"user_info":user_info})
 

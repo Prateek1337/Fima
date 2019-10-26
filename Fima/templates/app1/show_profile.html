@@ -4,13 +4,13 @@
   <div class="jumbotron">
     <h1>Welcome to the Djungle !</h1>
     {% if user %}
-        <h2>Name:{{ user.username }}</h2>
+        <h2>Name:{{ user_info.name }}</h2>
         <br>
-        <h2>Email: {{ user_info.username }}</h2>
+        <h2>Email: {{ user.email }}</h2>
         <br>
-        <h2>Email: {{ user_info.username }}</h2>
+        <h2>Gender: {{ user_info.gender }}</h2>
         <br>
-        <h2>Email: {{ user_info.username }}</h2>
+        <h2>DOB: {{ user_info.dob }}</h2>
     {% else %}
         <h2>No User Found</h2>
     {% endif %}
