@@ -16,7 +16,6 @@ class UserProfileInfoForm(forms.ModelForm):
          fields = ('name','gender','dob')
 
 class TransactionForm(forms.Form):
-	Email=forms.EmailField(label='Email',max_length=50)
 	Amount=forms.IntegerField(label='Amount')
 	Action=forms.ChoiceField(choices=[('Lent','Lent'),('Borrowed','Borrowed')])
 	Desc=forms.CharField(label='Description',max_length=20)
