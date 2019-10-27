@@ -12,8 +12,25 @@ from django.utils import timezone
 from django.contrib.auth.hashers import check_password
 import copy
 from datetime import date
+from django.contrib.auth.signals import user_logged_out
+from django.dispatch import receiver
+from django.contrib import messages
 
 # Create your views here.
+
+is_delete_message=False
+is_update_message=False
+
+@receiver(user_logged_out)
+def on_user_logged_out(sender, request, **kwargs):
+	if(is_update_message):
+		messages.add_message(request, messages.INFO, 'Account Details Updated SuccesFully, Login Again')
+	
+	elif(is_delete_message):
+		messages.add_message(request, messages.INFO, 'Account Deleted SuccesFully, Good Bye!')
+
+	else:
+		messages.add_message(request, messages.INFO, 'You Have Logged Out SuccesFully, Good Bye!')
 
 
 def index(request):
@@ -48,7 +65,7 @@ def register(request):
 				# If yes, then grab it from the POST form reply
 				profile.profile_pic = request.FILES['profile_pic']
 
-            # Now save model
+			# Now save model
 			profile.save()
 			registered=True
 
@@ -64,7 +81,11 @@ def register(request):
 
 def user_login(request):
 	global is_check_notofication
+	global is_delete_message
+	global is_update_message
 	is_check_notofication=False
+	is_delete_message=False
+	is_update_message=False
 	if(request.method=="POST"):
 		username=request.POST.get('username')
 		password=request.POST.get('password')
@@ -137,6 +158,7 @@ passed_email=None
 def make_transaction(request):
 	global passed_email
 	if(request.method=='POST'):
+		print(request.POST)
 		if('show' in request.POST):
 			form=TransactionForm()
 			passed_email = request.POST.get('friend_id')
@@ -149,6 +171,7 @@ def make_transaction(request):
 			is_click=True
 			to_user=User.objects.filter(email=passed_email)
 			if(form.is_valid()):
+				print("Validation Success")
 				action=form.cleaned_data['Action']
 				amount=form.cleaned_data['Amount']
 				desc=form.cleaned_data['Desc']
@@ -157,6 +180,7 @@ def make_transaction(request):
 							user_id2=to_user[0].id)
 					if(to_friend.exists()):
 						new_transaction=CurrentTransaction()
+						print("action="+str(action))
 						print(UserProfileInfo.objects.filter(user_id=
 								to_friend[0].user_id2.id))
 						if(action=='Lent'):
@@ -197,18 +221,15 @@ def make_transaction(request):
 						"passed_email":passed_email}) 
 
 				else:
-					return render(request,'app1/transaction.html',{'is_click':is_click,'form':form,
-					"passed_email":passed_email})
+					print("Validation Failed")
+					return HttpResponse("invalid Form")
 
 			else:
-				ValidationError(_('Invalid value'), code='invalid')
+				return render(request,'app1/transaction.html',{'form':form,"passed_email":passed_email})
 
 	else:
 		form=TransactionForm()
 		return render(request,'app1/transaction.html',{'form':form,"passed_email":passed_email})
-
-
-
 
 
 
@@ -227,13 +248,15 @@ def user_profile_view(request):
 
 @login_required
 def user_profile(request):
+	global is_update_message
 	if(request.method=='POST'):
-
 		form=UpdateProfileForm(request.POST)
 		is_clicked=True
 		if(form.is_valid()):
 			print("form is valid")
 			new_name=form.cleaned_data['name']
+			new_phone_number=form.cleaned_data['phone']
+			new_user_address=form.cleaned_data['address']
 			old_password=form.cleaned_data['old_password']
 		
 			if(check_password(old_password,request.user.password)):
@@ -247,8 +270,12 @@ def user_profile(request):
 					new_user_profile=UserProfileInfo.objects.filter(user=request.user)[0]
 					new_user.set_password(new_password)
 					new_user_profile.name=new_name
+					new_user_profile.phone_number=new_phone_number
+					new_user_profile.user_address=new_user_address
 					new_user.save()
 					new_user_profile.save()
+					is_update_message=True
+					return user_logout(request)
 				print(is_update)
 				return render(request,'app1/profile.html',{'is_update':is_update,'form':form})
 
@@ -257,7 +284,9 @@ def user_profile(request):
 		else:
 			ValidationError(_('Invalid value'), code='invalid')
 	else:
-		form=UpdateProfileForm()
+		form=UpdateProfileForm(initial={'name': UserProfileInfo.objects.filter(user=request.user)[0].name,
+		'phone':UserProfileInfo.objects.filter(user=request.user)[0].phone_number,
+		'address':UserProfileInfo.objects.filter(user=request.user)[0].user_address})
 		return render(request,'app1/profile.html',{'form':form})
 
 
@@ -274,6 +303,7 @@ def show_notification(request):
 
 @login_required
 def delete_account(request):
+	global is_delete_message
 	if(request.method=='POST'):
 		can=False
 		curr_t1=CurrentTransaction.objects.filter(user_id1=request.user)
@@ -286,7 +316,8 @@ def delete_account(request):
 			can=True
 			u=User.objects.get(username=request.user.username)
 			u.delete()
-			return render(request,'app1/delete.html',{"can":can})
+			is_delete_message=True
+			return user_logout(request)
 	else:
 		return render(request,'app1/delete.html')
 
