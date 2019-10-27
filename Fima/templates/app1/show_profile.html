@@ -37,7 +37,7 @@
             
             {% if user %}                       
               <div class="card" style='width: 100%;  margin-left:35%;' >
-                  <img src="{% static 'img3.png' %}" alt="John" style="width:30%">
+                  <img src="{{user_info.profile_pic.url}}" alt="John" style="width:30%">
                   <h1 class="some_text" style='text-transform: capitalize;'>{{ user_info.name }}</h1>
                   <p  class="some_text" style='font-size:30px;' >{{ user.email }}</p>
                   <p class="some_text" style='font-size:40px;'> {{ user_info.dob }}</p>

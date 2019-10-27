@@ -41,6 +41,14 @@ def register(request):
 			user.save()
 			profile=profile_form.save(commit=False)
 			profile.user=user
+
+			# Check if they provided a profile picture
+			if 'profile_pic' in request.FILES:
+				print('found it')
+				# If yes, then grab it from the POST form reply
+				profile.profile_pic = request.FILES['profile_pic']
+
+            # Now save model
 			profile.save()
 			registered=True
 

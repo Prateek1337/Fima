@@ -9,6 +9,7 @@ class UserProfileInfo(models.Model):
 	dob=models.DateField()
 	gender=models.CharField(max_length=10)
 	name=models.CharField(max_length=20,default='DefaultName')
+	profile_pic = models.ImageField(upload_to='app1/profile_pics',blank=True)
 	def __str__(self):
   		return self.user.username
 

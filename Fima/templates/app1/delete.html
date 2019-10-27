@@ -36,7 +36,7 @@
         {% if can %}
             <h1>Account Deleted SuccesFully</h1>
         {% elif can is False %}
-            <h1>You Have some unsettled Transaction Remaining , Selttle them to Delete Account</h1>
+            <h1>You Have some unsettled Transaction Remaining , Settle them to Delete Account</h1>
         {% else %}
           <h1>Are You Sure , You Want Delete Account !</h1>
           {% if user.is_authenticated %}

@@ -13,7 +13,7 @@ class UserForm(forms.ModelForm):
 class UserProfileInfoForm(forms.ModelForm):
      class Meta():
          model = UserProfileInfo
-         fields = ('name','gender','dob')
+         fields = ('name','gender','dob','profile_pic')
 
 class TransactionForm(forms.Form):
 	Amount=forms.IntegerField(label='Amount')
