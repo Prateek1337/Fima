@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 {% load staticfiles %}
 {% load my_extra %}
 
@@ -6,47 +7,76 @@
 <head>
   <meta charset="UTF-8">
   <title>HOME</title>
-  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel = 'stylesheet' href ="{% static "css/home_css.css" %}"/> 
+
+
+  <!-- remove this for good font -->
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+  <!-- remove this for good font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
+  <link rel = 'stylesheet' href ="{% static "css/home_css.css" %}"/> 
 
 </head>
 <body>
 
-  <!-- navbar -->
-  <nav class="navbar navbar-default navbar-static-top">
-      <div class="container">
-        <ul class="nav navbar-nav">
-<!-- {# Django Home Link / Admin Link / Register Link#} -->
-          <li><a class="navbar-brand" href="{% url 'index' %}">DJANGO</a></li>
-          <li><a class="navbar-link" href="{% url 'admin:index' %}">Admin</a></li>
-          <li><a class="navbar-link" href="{% url 'app2:home' %}">Home</a></li>
+  <!-- test -->
 
-          <li><a class="navbar-link" href="{% url 'app1:register' %}">Register</a></li>
-          <!-- {# Some logic on what to display for last item#} -->
-          {% if user.is_authenticated %}
-          <li><a class="navbar-link" href="{% url 'app2:history' %}">History</a></li>
+  <!-- testend -->
 
-          <li><a class="navbar-link" href="{% url 'app1:transaction' %}">ADD Transaction</a></li>
-
-            <li><a class="navbar-link" href="#">{{request.user.get_username}}</a></li>
-            <li><a href="{% url 'app1:logout' %}">Logout</a></li>
-          {% else %}
-            <li><a class="navbar-link" href="{% url 'app1:login' %}">Login</a></li>
-          {% endif %}
-        </ul>
-      </div>
-    </nav>
-    <!-- navbar end -->
-
-
+  {% block foo %}
+  {% include "app2/main_index.html" %}
+ {% endblock %}
 
 <!-- partial:index.partial.html -->
+ 
+  <!-- dashboard -->
+  <!-- <span  style='margin: 220px; font-size: 40px; color:black' >Total</span> 
+
+  <span style='height:1000px; border-left: 4px solid rgb(0, 0, 0);'></span>
+            
+  <span  style='margin: 100px; font-size: 40px; color:rgb(0, 255, 0)'>Lent</span>   
+
+  <span style='height:500px; border-left: 4px solid rgb(0, 0, 0);'></span>
+  
+  <span  style='margin: 100px; font-size: 40px; color:rgb(255, 115, 0)'>Borrowed</span><br> 
+  <span style='margin: 220px; font-size: 40px; color:black'>1111</span>
+
+  <span style='height:500px; border-left: 4px solid rgb(0, 0, 0);'></span>
+
+   <span style='margin: 100px; font-size: 40px; color:rgb(0, 255, 0)'>222</span>
+
+   <span style='height:500px; border-left: 4px solid rgb(0, 0, 0);'></span>
+
+    <span style='margin: 100px; font-size: 40px; color: rgb(255, 115, 0)'>4444</span><br>  -->
+
+
+  <!-- dashboard -->
+
 <div class="pricingTable">
   <h2 class="pricingTable-title">FINANCIAL MANAGEMENT</h2>
   <h3 class="pricingTable-subtitle">Your Finances</h3>
+
+
+  <table style='margin-left: 200px; width: 80%; font-weight: bold;text-align:center;'>
+      <thead >
+          <th style=' color: rgb(47, 53, 65); font-size: 40px; text-align:center;'>Total</th>
+          <th style='color: rgb(0, 255, 0); font-size: 40px; text-align:center;' >Lent</th>
+          <th style='color: rgb(255, 115, 0); font-size: 40px;text-align:center;' >Borrowed</th>
+      </thead>
+      <tr>
+        
+        <td style='color: rgb(30, 35, 44); font-size: 40px;'>{{ all_details|value_of_key:'total'}}</td>
+        <td style='color: rgb(0, 255, 0); font-size: 40px;'>{{ all_details|value_of_key:'pos'}}</td>
+        <td style='color: rgb(255, 115, 0); font-size: 40px;'>{{ all_details|value_of_key:'neg'}}</td>
+      </tr>
+  </table><br><br><br>
   
-  {% if names %}
+  {% if amount|checksize %}
 
   <ul class="pricingTable-firstTable">
         {%  for email in amount %}
@@ -88,8 +118,6 @@
 
 
 
-<!-- partial -->
-  <script  src="./script.js"></script>
 
 </body>
 </html>

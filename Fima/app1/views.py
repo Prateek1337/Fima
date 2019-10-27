@@ -11,6 +11,8 @@ from app1.forms import TransactionForm
 from django.utils import timezone
 from django.contrib.auth.hashers import check_password
 import copy
+from datetime import date
+
 # Create your views here.
 
 is_check_notification=False
@@ -45,7 +47,7 @@ def register(request):
 			profile=profile_form.save(commit=False)
 			profile.user=user
 			profile.save()
-			regitered=True
+			registered=True
 
 		else:
 			print(user_form.errors,profile_form.errors)
@@ -97,15 +99,17 @@ def user_search(request):
 			f2.user_id2=User.objects.get(id=request.user.id)
 			f2.user_id1=User.objects.get(id=add_friend.id)
 			f2.save()
-			message=request.user.email+" has added you as a friend"
-			add_notification(add_friend,message)
-			return HttpResponse('Friend Has been Added Succesfully')
+			message1 =request.user.email+" has added you as friend on "+str(date.today())
+			message_curr="You Have added " + add_friend.email + " as your friend on " + str(date.today())
+			add_notification(add_friend,message1)
+			add_notification(request.user,message_curr)
+			return render(request, 'app1/search.html',{'success':True} )
 		elif(query is not None):
 			is_exist=False
 			result=User.objects.filter(email=query)
 			if(result.exists() and result[0].username!=request.user.username):
 				# print(request.user.username)
-				is_friend=False;
+				is_friend=False
 				is_friend_query=Friends.objects.filter(user_id1=request.user.id,
 					user_id2=result[0].id)
 				if(is_friend_query.exists()):
@@ -130,7 +134,7 @@ def user_search(request):
 def make_transaction(request):
 	if(request.method=='POST'):
 		form=TransactionForm(request.POST)
-		is_click=True;
+		is_click=True
 		if(form.is_valid()):
 			email=form.cleaned_data['Email']
 			action=form.cleaned_data['Action']
@@ -152,8 +156,10 @@ def make_transaction(request):
 						new_transaction.borrowed=UserProfileInfo.objects.filter(user=
 							to_friend[0].user_id2)[0].name
 						
-						message="You Have Borrowed "+str(amount)+"Rs from"+request.user.email
-						add_notification(to_friend[0].user_id2,message)	
+						message_curr ="You Have Lent Rs"+str(amount)+" to "+to_friend[0].user_id2.email+" on "+str(date.today())
+						message1="You Have Borrowed Rs"+str(amount)+" from "+request.user.email +" on "+str(date.today())
+						add_notification(to_friend[0].user_id2,message1)
+						add_notification(request.user,message_curr)
 						
 					else:
 						new_transaction.user_id2=request.user
@@ -163,13 +169,15 @@ def make_transaction(request):
 						new_transaction.lent=UserProfileInfo.objects.filter(user=
 							to_friend[0].user_id2)[0].name
 
-						message="You Have Lent "+str(amount)+"Rs to"+request.user.email
-						add_notification(to_friend[0].user_id2,message)
+						message1 ="You Have Lent Rs"+str(amount)+" to "+request.user.email+" on "+str(date.today())
+						message_curr="You Have Borrowed Rs"+str(amount)+" from "+to_friend[0].user_id2.email+" on "+str(date.today())
+						add_notification(to_friend[0].user_id2,message1)
+						add_notification(request.user,message_curr)
 
 					new_transaction.amount=amount
 					new_transaction.desc=desc
 					new_transaction.tdate=timezone.now()
-					new_transaction.save();
+					new_transaction.save()
 					return render(request,'app1/transaction.html',{'to_friend':to_friend,'form':form})
 
 				else:

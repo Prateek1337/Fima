@@ -8,56 +8,48 @@
   <title>TRANSACTIONS</title>
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel = 'stylesheet' href ="{% static "css/home_css.css" %}"/> 
+<!-- <link rel = 'stylesheet' href ="{% static "css/general.css  " %}"/>  -->
+<link rel = 'stylesheet' href ="{% static "css/tables.css" %}"/> 
 
 </head>
 <body>
 
-  <!-- navbar -->
-  <nav class="navbar navbar-default navbar-static-top">
-      <div class="container">
-        <ul class="nav navbar-nav">
-<!-- {# Django Home Link / Admin Link / Register Link#} -->
-          <li><a class="navbar-brand" href="{% url 'index' %}">DJANGO</a></li>
-          <li><a class="navbar-link" href="{% url 'admin:index' %}">Admin</a></li>
-          <li><a class="navbar-link" href="{% url 'app2:home' %}">Home</a></li>
 
-          <li><a class="navbar-link" href="{% url 'app1:register' %}">Register</a></li>
-          <!-- {# Some logic on what to display for last item#} -->
-          {% if user.is_authenticated %}
-            <li><a class="navbar-link" href="#">{{request.user.get_username}}</a></li>
-            <li><a href="{% url 'app1:logout' %}">Logout</a></li>
-          {% else %}
-            <li><a class="navbar-link" href="{% url 'app1:login' %}">Login</a></li>
-          {% endif %}
-        </ul>
-      </div>
-    </nav>
-    <!-- navbar end -->
-
+    {% block foo %}
+     {% include "app2/main_index.html" %}
+    {% endblock %}
+    <div class='shift_it' style='  margin:50px;
+    margin-left: 100px;
+    font-size: 40px;'>All settled transactions are here</div>
 
     <div class = "djangotwo"> 
             {% if his_record %}
-            <table>
-                <thead>
-                    <th>To : </th>
-                    <th>amount : </th>
-                    <th>date : </th>
-                    <th>desc : </th>
+            <table style='margin-left: 100px; width: 80%; font-weight: bold;'>
+                <thead >
+                    <th style='color: rgb(47, 53, 65); font-size: 40px;'>Friend</th>
+                    <th style='color: rgb(47, 53, 65); font-size: 40px;' >Amount</th>
+                    <th style='color: rgb(47, 53, 65); font-size: 40px;' >Status</th>
+                    <th style='color: rgb(47, 53, 65); font-size: 40px;' >Date</th>
+                    <th style='color: rgb(47, 53, 65); font-size: 40px;'>Desc</th>
                 </thead>
-                <td>{{t.user_id2 }}</td>
-                {%  for t in trans_record %}
+                {%  for t in his_record %}
                         <tr>
-                    {% if  t|checK_for_history_of_transaction:curr_user %}    
+                             
+
+                    {% if  t|check_for_history_of_transaction:curr_user %}    
+                                <td style='color: rgb(133, 127, 187); font-size: 30px;'>{{ t.user_id2 }}</td>
                         {% if t|find_trans:curr_user %}
-                                <td style='color:rgb(255, 115, 0)'>{{t.amount}}</td>
+                                <td style='color:rgb(255, 115, 0); font-size: 30px; '>{{t.Amount}}</td>
+                                <td style='color:rgb(255, 115, 0); font-size: 30px;'>Borrowed</td>
+
                         {% else %}
-                            <tr>
-                                <td style = 'color:rgb(0, 255, 7)'>{{t.amount}}</td>
+                                <td style = 'color:rgb(0, 255, 7); font-size: 30px;'>{{t.Amount}}</td>
+                                <td style = 'color:rgb(0, 255, 7); font-size: 30px;'>Lent</td>
+
                         {%endif%}
 
-                                <td>{{t.tdate }}</td>
-                                <td>{{t.desc}}</td>
+                                <td style='color: rgb(133, 127, 187); font-size: 20px;'> {{t.date }}</td>
+                                <td style='color: rgb(133, 127, 187); font-size: 20px;' > {{t.Desc}}</td>
                             </tr>
                     {%endif%}
                 {% endfor %}
@@ -67,6 +59,11 @@
             {%endif%}
         
          </div>
+
+         
+
+
+         
 
 </body>
 </html>
