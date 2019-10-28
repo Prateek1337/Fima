@@ -47,6 +47,7 @@ def user_logout(request):
 
 def register(request):
 	registered=False
+	error_s = ""
 	if(request.method=='POST'):
 		user_form=UserForm(data=request.POST)
 		profile_form=UserProfileInfoForm(data=request.POST)
@@ -71,6 +72,12 @@ def register(request):
 
 		else:
 			print(user_form.errors,profile_form.errors)
+			error_s1=	str(user_form.errors)
+			error_s2 = str(profile_form.errors)
+			user_form=UserForm()
+			return render(request,'app1/registration.html',{'error_s1':error_s1,'error_s2':error_s2,'user_form':user_form,
+						   'profile_form':profile_form})
+			
 	else:
 		user_form = UserForm()
 		profile_form = UserProfileInfoForm()
@@ -100,7 +107,7 @@ def user_login(request):
 		else:
 			print("Someone tried to login and failed.")
 			print("They used username: {} and password: {}".format(username,password))
-			return HttpResponse("Invalid login details given")
+			return render(request, 'app1/login.html', {'failed_login':True})
 	else:
 		return render(request, 'app1/login.html', {})
 
@@ -191,8 +198,8 @@ def make_transaction(request):
 							new_transaction.borrowed=UserProfileInfo.objects.filter(user=
 								to_friend[0].user_id2)[0].name
 							
-							message_curr ="You Have Lent Rs"+str(amount)+" to "+to_friend[0].user_id2.email+" on "+str(date.today())
-							message1="You Have Borrowed Rs"+str(amount)+" from "+request.user.email +" on "+str(date.today())
+							message_curr ="You Have Lent Rs "+str(amount)+" to "+to_friend[0].user_id2.email+" on "+str(date.today())
+							message1="You Have Borrowed Rs "+str(amount)+" from "+request.user.email +" on "+str(date.today())
 							add_notification(to_friend[0].user_id2,message1)
 							add_notification(request.user,message_curr)
 							
@@ -294,7 +301,8 @@ def user_profile(request):
 
 @login_required
 def show_notification(request):
-	old_not=list(OldNotification.objects.filter(user_id=request.user))
+	old_not=list(OldNotification.objects.filter(user_id=request.user)) 
+	old_not = reversed(old_not)
 	new_not=list(NewNotification.objects.filter(user_id=request.user))
 	move_notification(request.user)
 	return render(request,'app1/notification.html',{'old_not':old_not,'new_not':new_not})
@@ -315,8 +323,13 @@ def delete_account(request):
 		else:
 			can=True
 			u=User.objects.get(username=request.user.username)
-			u.delete()
 			is_delete_message=True
+			message1="You Friend "+ str(u.email) +" has left FIMA after settling all the expenses " +" on "+str(date.today())
+			all_friends=list(Friends.objects.all())
+			for friends in all_friends:
+				if(friends.user_id1==u):
+					add_notification(friends.user_id2,message1)
+			u.delete()
 			return user_logout(request)
 	else:
 		return render(request,'app1/delete.html')

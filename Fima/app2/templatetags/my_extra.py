@@ -1,4 +1,5 @@
 from django import template
+from app1.views import notification_count
 
 register = template.Library()
 @register.filter(name='value_of_key')
@@ -68,6 +69,18 @@ def check_for_this_user_transaction(trans,emails):
 
 
 
+
+@register.filter(name='return_the_friend')
+
+def return_the_friend(trans,curr_user):
+    """
+    This returns if the  transactions which has user1 as curr_user
+    """
+    if str(trans.user_id1) == curr_user:
+            return trans.user_id2
+    elif str(trans.user_id2) == curr_user:
+            return trans.user_id1
+
 @register.filter(name='check_for_history_of_transaction')
 
 def check_for_history_of_transaction(trans,curr_user):
@@ -122,3 +135,17 @@ def check_object_size(object,curr_user):
         return True
     else:
         return False
+
+
+
+@register.filter(name='get_no_of_notifications')
+
+def get_no_of_notifications(string_no_use,curr_user):
+    """
+    This returns the value of a dict given its key
+    """ 
+    try:
+        count = notification_count(curr_user)
+        return count
+    except:
+        return 0
