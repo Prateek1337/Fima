@@ -113,6 +113,7 @@
           <li><a class="navbar-link" href="{% url 'app2:history' %}">Transaction History</a></li>
           <li><a class="navbar-link" href="{% url 'app1:viewprofile' %}">{{request.user.get_username}}</a></li>
           <li><a class="navbar-link" href="{% url 'app1:notification' %}">Notifications</a></li>
+          <li><a class="navbar-link" href="{% url 'app1:admin' %}">Admin Notifications</a></li>
           <li><a class="navbar-link" href="{% url 'app1:logout' %}">Logout</a></li>
             <!-- if not logined  -->
             {% else %}

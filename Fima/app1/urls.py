@@ -13,4 +13,5 @@ urlpatterns = [
     path('viewprofile',views.user_profile_view,name='viewprofile'),
     path('notification',views.show_notification,name='notification'),
     path('delete',views.delete_account,name='delete'),
+    path('admin',views.admin_notification,name='admin')
 ]

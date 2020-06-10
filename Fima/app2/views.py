@@ -57,8 +57,8 @@ def settle_trans(request):
                     req_email = find_required_email(passed_email)
                     CurrentTransaction.objects.filter( user_id1 = req_email , user_id2 =  request.user  ).delete()
     # adding notifications
-    message1 = curr_user_email + " has settled all expenses on " + str(date.today())
-    message2 = "you have settled tranctions with " + passed_email + " on " + str(date.today())
+    message1 = curr_user_email + " has settled all expenses with "+passed_email+" on " + str(date.today())
+    message2 = curr_user_email+" have settled tranctions with " + passed_email + " on " + str(date.today())
     required_e = User.objects.filter(email = passed_email)[0]
 
     add_notification(request.user,message2)

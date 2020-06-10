@@ -2,7 +2,7 @@ from django.shortcuts import render
 from app1.forms import UserForm,UserProfileInfoForm,UpdateProfileForm
 from django.contrib.auth import authenticate,login,logout
 from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required
 from app1.models import CurrentTransaction,Friends,UserProfileInfo,OldNotification,NewNotification
 from django.contrib.auth.models import User
@@ -15,6 +15,22 @@ from datetime import date
 from django.contrib.auth.signals import user_logged_out
 from django.dispatch import receiver
 from django.contrib import messages
+
+
+
+#getting roles and permissions and context
+
+from rbac.context import IdentityContext, PermissionDenied
+from role import *
+
+context=IdentityContext(acl)
+
+@context.set_roles_loader
+def first_load_roles():
+	yield "viewer"
+
+	
+
 
 # Create your views here.
 
@@ -36,6 +52,8 @@ def on_user_logged_out(sender, request, **kwargs):
 def index(request):
 	return render(request,'app1/index.html')
 
+
+
 @login_required
 def special(request):
 	return HttpResponse("You Are logged in !")
@@ -45,6 +63,8 @@ def user_logout(request):
 	logout(request)
 	return HttpResponseRedirect(reverse('index'))
 
+
+@context.check_permission("access", "register")
 def register(request):
 	registered=False
 	error_s = ""
@@ -86,6 +106,7 @@ def register(request):
 						   'profile_form':profile_form,
 						   'registered':registered})
 
+@context.check_permission("access", "user_login")
 def user_login(request):
 	global is_check_notofication
 	global is_delete_message
@@ -112,6 +133,14 @@ def user_login(request):
 		return render(request, 'app1/login.html', {})
 
 add_friend=None
+
+
+
+@context.set_roles_loader
+def second_load_roles():
+	yield "user"
+
+@context.check_permission("access", "user_search")
 @login_required
 def user_search(request):
 	global add_friend
@@ -130,8 +159,8 @@ def user_search(request):
 			f2.user_id2=User.objects.get(id=request.user.id)
 			f2.user_id1=User.objects.get(id=add_friend.id)
 			f2.save()
-			message1 =request.user.email+" has added you as friend on "+str(date.today())
-			message_curr="You Have added " + add_friend.email + " as your friend on " + str(date.today())
+			message1 =request.user.email+" has added "+add_friend.email+" friend on "+str(date.today())
+			message_curr=request.user.email+" Have added " + add_friend.email + " as friend on " + str(date.today())
 			add_notification(add_friend,message1)
 			add_notification(request.user,message_curr)
 			return render(request, 'app1/search.html',{'success':True} )
@@ -161,6 +190,8 @@ def user_search(request):
 
 
 passed_email=None
+
+@context.check_permission("access", "make_transaction")
 @login_required
 def make_transaction(request):
 	global passed_email
@@ -198,8 +229,8 @@ def make_transaction(request):
 							new_transaction.borrowed=UserProfileInfo.objects.filter(user=
 								to_friend[0].user_id2)[0].name
 							
-							message_curr ="You Have Lent Rs "+str(amount)+" to "+to_friend[0].user_id2.email+" on "+str(date.today())
-							message1="You Have Borrowed Rs "+str(amount)+" from "+request.user.email +" on "+str(date.today())
+							message_curr =request.user.email+" Have Lent Rs "+str(amount)+" to "+to_friend[0].user_id2.email+" on "+str(date.today())
+							message1=to_friend[0].user_id2.email+" Have Borrowed Rs "+str(amount)+" from "+request.user.email +" on "+str(date.today())
 							add_notification(to_friend[0].user_id2,message1)
 							add_notification(request.user,message_curr)
 							
@@ -241,7 +272,7 @@ def make_transaction(request):
 
 
 
-
+@context.check_permission("access", "user_profile_view")
 @login_required
 def user_profile_view(request):
 	user_info=UserProfileInfo.objects.filter(user=request.user)[0]
@@ -252,7 +283,7 @@ def user_profile_view(request):
 
 
 
-
+@context.check_permission("access", "user_profile")
 @login_required
 def user_profile(request):
 	global is_update_message
@@ -298,7 +329,7 @@ def user_profile(request):
 
 
 
-
+@context.check_permission("access", "show_notification")
 @login_required
 def show_notification(request):
 	old_not=list(OldNotification.objects.filter(user_id=request.user)) 
@@ -307,8 +338,25 @@ def show_notification(request):
 	move_notification(request.user)
 	return render(request,'app1/notification.html',{'old_not':old_not,'new_not':new_not})
 
+@context.check_permission("access", "show_notification")
+@login_required
+def admin_notification(request):
+	admin_username=request.user.username
+	print(type(request.user.username))
+	if(admin_username=="test17@gmail.com"):
+		old_not=list(OldNotification.objects.all()) 
+		old_not = reversed(old_not)
+		new_not=list(NewNotification.objects.all())
+		move_notification(request.user)
+		return render(request,'app1/admin_notification.html',{'old_not':old_not,'new_not':new_not})
+	else:
+		return HttpResponseNotFound('<h1>Permission denied , You are NOT admin user</h1>')
 
 
+
+
+
+@context.check_permission("access", "delete_account")
 @login_required
 def delete_account(request):
 	global is_delete_message
@@ -343,12 +391,14 @@ def delete_account(request):
 def notification_count(user):
 	return str(NewNotification.objects.filter(user_id=user).count())
 
+@context.check_permission("access", "add_notification")
 def add_notification(user,message):
 	new_notification=NewNotification()
 	new_notification.user_id=user
 	new_notification.desc=message
-	new_notification.save()
+	new_notification.save()	
 
+@context.check_permission("access", "move_notification")
 def move_notification(user):
 	all_obj=NewNotification.objects.filter(user_id=user)
 	for obj in all_obj:
